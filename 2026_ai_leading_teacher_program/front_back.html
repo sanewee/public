@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>프론트엔드와 백엔드</title>
+<style>
+  :root{
+    --text:#37352F;
+    --sub:#787774;
+    --line:#EBEAE7;
+    --bg:#FFFFFF;
+    --bg2:#FBFBFA;
+    --front:#2383E2;
+    --front-bg:#EAF3FC;
+    --back:#7C3AED;
+    --back-bg:#F2ECFC;
+    --db:#5B4636;
+    --red:#E03E3E;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Apple SD Gothic Neo',
+      'Malgun Gothic',sans-serif;
+    color:var(--text);
+    background:var(--bg2);
+    line-height:1.6;
+    padding:clamp(16px,4vw,40px);
+  }
+  .wrap{max-width:900px;margin:0 auto}
+
+  header{margin-bottom:28px}
+  h1{
+    font-size:clamp(24px,5vw,34px);
+    font-weight:700;
+    letter-spacing:-.02em;
+    margin-bottom:8px;
+  }
+  .lead{color:var(--sub);font-size:clamp(14px,3vw,16px)}
+  .lead b{color:var(--front);font-weight:600}
+  .lead i{color:var(--back);font-style:normal;font-weight:600}
+
+  /* 다이어그램 */
+  .diagram{
+    display:grid;
+    grid-template-columns:1fr auto 1fr;
+    gap:0;
+    align-items:stretch;
+    background:var(--bg);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:clamp(16px,3vw,26px);
+    margin-bottom:18px;
+  }
+  .stage{
+    border-radius:12px;
+    padding:18px 16px;
+    transition:box-shadow .25s,background .25s;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .stage.front{background:var(--front-bg)}
+  .stage.back{background:var(--back-bg)}
+  .stage.active.front{box-shadow:0 0 0 3px var(--front)}
+  .stage.active.back{box-shadow:0 0 0 3px var(--back)}
+
+  .tag{
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:12px;font-weight:600;letter-spacing:.02em;
+    align-self:flex-start;
+    padding:4px 10px;border-radius:999px;
+  }
+  .front .tag{background:var(--front);color:#fff}
+  .back .tag{background:var(--back);color:#fff}
+  .stage .desc{font-size:12.5px;color:var(--sub)}
+
+  /* 프론트: 미니 브라우저 */
+  .browser{
+    background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  }
+  .bar{
+    display:flex;gap:5px;align-items:center;
+    padding:8px 10px;border-bottom:1px solid var(--line);background:var(--bg2);
+  }
+  .dot{width:8px;height:8px;border-radius:50%;background:#E5E4E1}
+  .screen{padding:22px 16px;text-align:center}
+  .heart{
+    font-size:34px;line-height:1;cursor:pointer;user-select:none;
+    transition:transform .15s;display:inline-block;
+  }
+  .heart:hover{transform:scale(1.12)}
+  .heart:active{transform:scale(.92)}
+  .heart.pop{animation:pop .4s}
+  @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.4)}100%{transform:scale(1)}}
+  .count{font-size:26px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
+  .count small{font-size:13px;font-weight:500;color:var(--sub);margin-left:3px}
+
+  /* 백엔드: 서버 + DB */
+  .server{
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    padding:14px;font-size:12.5px;
+  }
+  .logline{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+    color:var(--sub);padding:3px 0;transition:color .2s;
+  }
+  .logline.hit{color:var(--back);font-weight:600}
+  .db{
+    margin-top:12px;text-align:center;
+  }
+  .cyl{
+    display:inline-block;width:74px;height:56px;position:relative;
+    transition:transform .2s;
+  }
+  .cyl.save{animation:save .5s}
+  @keyframes save{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .cyl .top{
+    position:absolute;top:0;left:0;width:74px;height:16px;border-radius:50%;
+    background:var(--db);
+  }
+  .cyl .body{
+    position:absolute;top:8px;left:0;width:74px;height:40px;
+    background:var(--db);border-radius:0 0 37px 37px/0 0 8px 8px;
+  }
+  .cyl .top2{
+    position:absolute;top:40px;left:0;width:74px;height:16px;border-radius:50%;
+    background:#4a3829;
+  }
+  .db .val{
+    margin-top:6px;font-size:13px;font-weight:600;
+    font-variant-numeric:tabular-nums;
+  }
+  .db .val span{color:var(--back)}
+
+  /* 가운데 통로 */
+  .wire{
+    position:relative;width:clamp(60px,12vw,120px);
+    display:flex;align-items:center;justify-content:center;
+  }
+  .rail{
+    position:absolute;top:50%;left:8px;right:8px;height:2px;
+    background:var(--line);transform:translateY(-50%);
+  }
+  .packet{
+    position:absolute;top:50%;left:8px;
+    transform:translate(0,-50%);
+    padding:4px 9px;border-radius:7px;font-size:11px;font-weight:600;color:#fff;
+    white-space:nowrap;opacity:0;
+    transition:left .8s ease,opacity .2s;
+  }
+  .packet.req{background:var(--front)}
+  .packet.res{background:var(--back)}
+
+  /* 내레이션 */
+  .narration{
+    display:flex;gap:12px;align-items:flex-start;
+    background:var(--bg);border:1px solid var(--line);border-radius:12px;
+    padding:16px 18px;margin-bottom:18px;min-height:76px;
+  }
+  .step-no{
+    flex:none;width:30px;height:30px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:14px;color:#fff;background:var(--sub);
+    transition:background .2s;
+  }
+  .step-no.front{background:var(--front)}
+  .step-no.back{background:var(--back)}
+  .narration .txt{font-size:14.5px}
+  .narration .txt b{color:var(--front)}
+  .narration .txt i{color:var(--back);font-style:normal;font-weight:600}
+
+  /* 컨트롤 */
+  .controls{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:30px;
+  }
+  button.btn{
+    font-family:inherit;font-size:14px;font-weight:500;
+    color:var(--text);background:var(--bg);
+    border:1px solid var(--line);border-radius:8px;
+    padding:10px 16px;cursor:pointer;transition:background .12s,border-color .12s;
+  }
+  button.btn:hover{background:var(--bg2)}
+  button.btn:active{background:var(--line)}
+  button.btn:disabled{opacity:.45;cursor:default}
+  .toggle{
+    display:inline-flex;align-items:center;gap:8px;
+    margin-left:auto;font-size:13.5px;color:var(--sub);cursor:pointer;user-select:none;
+  }
+  .switch{
+    position:relative;width:40px;height:22px;border-radius:999px;
+    background:var(--back);transition:background .2s;flex:none;
+  }
+  .switch::after{
+    content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;
+    border-radius:50%;background:#fff;transition:transform .2s;
+  }
+  .toggle.off .switch{background:#D3D1CC}
+  .toggle.off .switch::after{transform:translateX(18px)}
+
+  /* 역할 비교 */
+  .compare{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px;
+  }
+  .col{
+    border:1px solid var(--line);border-radius:12px;padding:18px 18px 8px;
+    background:var(--bg);
+  }
+  .col.f{border-top:4px solid var(--front)}
+  .col.b{border-top:4px solid var(--back)}
+  .col h3{font-size:15px;margin-bottom:2px}
+  .col.f h3{color:var(--front)}
+  .col.b h3{color:var(--back)}
+  .col .role{font-size:12px;color:var(--sub);margin-bottom:12px}
+  .col ul{list-style:none}
+  .col li{
+    font-size:13.5px;padding:6px 0 6px 20px;position:relative;
+    border-top:1px solid var(--line);
+  }
+  .col li:first-child{border-top:none}
+  .col li::before{
+    content:"";position:absolute;left:4px;top:13px;
+    width:6px;height:6px;border-radius:50%;
+  }
+  .col.f li::before{background:var(--front)}
+  .col.b li::before{background:var(--back)}
+
+  .hint{font-size:12.5px;color:var(--sub);margin-top:14px;text-align:center}
+
+  @media (max-width:620px){
+    .diagram{grid-template-columns:1fr}
+    .wire{width:100%;height:56px;transform:rotate(90deg);margin:4px 0}
+    .compare{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>프론트엔드와 백엔드, 무엇이 다를까?</h1>
+    <p class="lead"><b>프론트엔드</b>는 사용자가 보고 만지는 화면, <i>백엔드</i>는 그 뒤에서 처리하고 저장하는 서버예요. 아래 하트를 눌러 요청이 어떻게 오가는지 직접 확인해 보세요.</p>
+  </header>
+
+  <div class="diagram">
+    <!-- 프론트엔드 -->
+    <div class="stage front" id="stageFront">
+      <span class="tag">🖥️ 프론트엔드</span>
+      <div class="browser">
+        <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+        <div class="screen">
+          <div class="heart" id="heart" role="button" tabindex="0" aria-label="좋아요">🤍</div>
+          <div class="count"><span id="count">0</span><small>좋아요</small></div>
+        </div>
+      </div>
+      <div class="desc">사용자가 직접 보고 클릭하는 곳 · HTML/CSS/JS</div>
+    </div>
+
+    <!-- 통로 -->
+    <div class="wire">
+      <div class="rail"></div>
+      <div class="packet req" id="pReq">요청 ▶</div>
+      <div class="packet res" id="pRes">◀ 응답</div>
+    </div>
+
+    <!-- 백엔드 -->
+    <div class="stage back" id="stageBack">
+      <span class="tag">⚙️ 백엔드</span>
+      <div class="server">
+        <div class="logline" id="log1">요청 대기 중…</div>
+        <div class="logline" id="log2">좋아요 +1 처리</div>
+        <div class="logline" id="log3">데이터베이스에 저장</div>
+        <div class="db">
+          <div class="cyl" id="cyl"><span class="top"></span><span class="body"></span><span class="top2"></span></div>
+          <div class="val">저장된 값: <span id="dbVal">0</span></div>
+        </div>
+      </div>
+      <div class="desc">화면 뒤에서 로직 처리·데이터 저장 · 서버/DB</div>
+    </div>
+  </div>
+
+  <div class="narration">
+    <div class="step-no" id="stepNo">♥</div>
+    <div class="txt" id="narr">하트를 누르면 <b>프론트엔드</b>가 요청을 만들어 <i>백엔드</i>로 보냅니다. 시작해 볼까요?</div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="refreshBtn">🔄 새로고침</button>
+    <button class="btn" id="resetBtn">처음으로</button>
+    <label class="toggle" id="beToggle">
+      <span>백엔드</span><span class="switch"></span>
+    </label>
+  </div>
+
+  <div class="compare">
+    <div class="col f">
+      <h3>프론트엔드</h3>
+      <div class="role">"어떻게 보일까"를 맡아요</div>
+      <ul>
+        <li>사용자가 보는 화면과 버튼</li>
+        <li>클릭·입력 같은 상호작용 처리</li>
+        <li>서버에 요청을 보내고 결과를 화면에 표시</li>
+        <li>HTML · CSS · JavaScript</li>
+      </ul>
+    </div>
+    <div class="col b">
+      <h3>백엔드</h3>
+      <div class="role">"어떻게 동작하고 저장될까"를 맡아요</div>
+      <ul>
+        <li>화면 뒤에서 도는 서버</li>
+        <li>데이터 저장·조회 (데이터베이스)</li>
+        <li>로그인·계산·규칙 등 핵심 로직</li>
+        <li>여러 사용자가 같은 데이터를 공유</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="hint">💡 백엔드 스위치를 끄고 하트를 눌러 보세요. 그다음 새로고침하면 무슨 일이 생길까요?</p>
+</div>
+
+<script>
+(function(){
+  var heart   = document.getElementById('heart');
+  var countEl = document.getElementById('count');
+  var dbValEl = document.getElementById('dbVal');
+  var stFront = document.getElementById('stageFront');
+  var stBack  = document.getElementById('stageBack');
+  var pReq    = document.getElementById('pReq');
+  var pRes    = document.getElementById('pRes');
+  var cyl     = document.getElementById('cyl');
+  var narr    = document.getElementById('narr');
+  var stepNo  = document.getElementById('stepNo');
+  var logs    = [document.getElementById('log1'),document.getElementById('log2'),document.getElementById('log3')];
+  var refreshBtn = document.getElementById('refreshBtn');
+  var resetBtn   = document.getElementById('resetBtn');
+  var beToggle   = document.getElementById('beToggle');
+
+  var dbValue = 0;     // 백엔드(DB)에 저장된 값 — "진짜" 데이터
+  var shown   = 0;     // 화면에 보이는 값
+  var backendOn = true;
+  var busy = false;
+
+  function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+  function setStep(n, cls, html){
+    stepNo.textContent = n;
+    stepNo.className = 'step-no' + (cls ? ' '+cls : '');
+    narr.innerHTML = html;
+  }
+  function clearActive(){
+    stFront.classList.remove('active');
+    stBack.classList.remove('active');
+    logs.forEach(function(l){l.classList.remove('hit');});
+  }
+
+  async function flow(){
+    if(busy) return;
+
+    // 백엔드가 꺼져 있으면: 화면 숫자만 임시로 바뀜
+    if(!backendOn){
+      shown++;
+      countEl.textContent = shown;
+      heart.textContent = '❤️';
+      heart.classList.remove('pop'); void heart.offsetWidth; heart.classList.add('pop');
+      setStep('!', 'front',
+        '<b>프론트엔드</b>가 화면 숫자만 임시로 바꿨어요. 저장을 맡을 <i>백엔드</i>가 꺼져 있어서, 이 값은 아직 어디에도 기록되지 않았습니다. 새로고침하면 사라져요.');
+      return;
+    }
+
+    busy = true;
+    heart.style.pointerEvents = 'none';
+
+    // ① 프론트엔드: 요청 생성
+    clearActive();
+    stFront.classList.add('active');
+    heart.textContent = '❤️';
+    setStep('1','front','<b>프론트엔드</b>: 클릭을 감지하고, "좋아요를 눌렀다"는 <b>요청</b>을 만들어 서버로 보냅니다.');
+    await sleep(900);
+
+    // 요청 패킷 이동 (좌→우)
+    pReq.style.opacity = '1';
+    pReq.style.left = 'calc(100% - 70px)';
+    await sleep(850);
+    pReq.style.opacity = '0';
+
+    // ② 백엔드: 처리 + 저장
+    stFront.classList.remove('active');
+    stBack.classList.add('active');
+    setStep('2','back','<i>백엔드</i>: 요청을 받아 좋아요 수를 1 늘리고, <i>데이터베이스</i>에 저장합니다. 화면에는 안 보이지만 실제 기록은 여기서 일어나요.');
+    logs[0].classList.add('hit'); await sleep(500);
+    logs[0].classList.remove('hit'); logs[1].classList.add('hit');
+    dbValue++;
+    await sleep(500);
+    logs[1].classList.remove('hit'); logs[2].classList.add('hit');
+    cyl.classList.remove('save'); void cyl.offsetWidth; cyl.classList.add('save');
+    dbValEl.textContent = dbValue;
+    await sleep(700);
+    logs[2].classList.remove('hit');
+
+    // 응답 패킷 이동 (우→좌)
+    pRes.style.opacity = '1';
+    pRes.style.left = '8px';
+    setStep('3','back','<i>백엔드</i>: 저장을 마치고, 새 좋아요 수를 <b>응답</b>으로 돌려보냅니다.');
+    await sleep(850);
+    pRes.style.opacity = '0';
+    pRes.style.left = 'calc(100% - 70px)';
+
+    // ③ 프론트엔드: 화면 갱신
+    stBack.classList.remove('active');
+    stFront.classList.add('active');
+    shown = dbValue;
+    countEl.textContent = shown;
+    heart.classList.remove('pop'); void heart.offsetWidth; heart.classList.add('pop');
+    setStep('4','front','<b>프론트엔드</b>: 응답을 받아 화면의 숫자를 새로 그립니다. 사용자는 이 순간만 보지만, 진짜 저장은 <i>백엔드</i>가 끝낸 뒤였어요.');
+    await sleep(1100);
+
+    clearActive();
+    setStep('✓','','완료! <b>프론트엔드</b>는 보여주고, <i>백엔드</i>는 처리·저장했습니다. 둘이 요청과 응답을 주고받으며 하나의 기능이 완성돼요.');
+    heart.style.pointerEvents = '';
+    busy = false;
+  }
+
+  function refresh(){
+    if(busy) return;
+    // 새로고침 = 화면을 비우고, 백엔드(DB)에서 값을 다시 읽어옴
+    shown = dbValue;
+    countEl.textContent = shown;
+    heart.textContent = dbValue>0 ? '❤️' : '🤍';
+    if(backendOn){
+      setStep('↺','back','새로고침했습니다. 화면은 지워졌지만 <i>백엔드</i>가 값을 저장해 두었기 때문에, 다시 불러오면 좋아요 수가 그대로 유지돼요.');
+    }else{
+      setStep('↺','','새로고침했습니다. <i>백엔드</i>가 꺼져 있어 저장된 값이 없으니, 임시로 올라갔던 숫자는 사라지고 처음 상태로 돌아갑니다.');
+    }
+  }
+
+  function resetAll(){
+    dbValue = 0; shown = 0; busy = false;
+    countEl.textContent = 0; dbValEl.textContent = 0;
+    heart.textContent = '🤍'; heart.style.pointerEvents = '';
+    clearActive();
+    setStep('♥','','하트를 누르면 <b>프론트엔드</b>가 요청을 만들어 <i>백엔드</i>로 보냅니다. 시작해 볼까요?');
+  }
+
+  function toggleBackend(){
+    backendOn = !backendOn;
+    beToggle.classList.toggle('off', !backendOn);
+    if(backendOn){
+      setStep('⚙','back','<i>백엔드</i>를 켰습니다. 이제 좋아요가 데이터베이스에 저장돼요.');
+    }else{
+      setStep('✕','','<i>백엔드</i>를 껐습니다. 화면 숫자는 바꿀 수 있지만 저장할 곳이 없어요. 하트를 누른 뒤 새로고침해 보세요.');
+    }
+  }
+
+  heart.addEventListener('click', flow);
+  heart.addEventListener('keydown', function(e){ if(e.key===' '||e.key==='Enter'){e.preventDefault();flow();} });
+  refreshBtn.addEventListener('click', refresh);
+  resetBtn.addEventListener('click', resetAll);
+  beToggle.addEventListener('click', toggleBackend);
+})();
+</script>
+</body>
+</html>
